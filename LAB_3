@@ -1,0 +1,171 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <map>
+#include <cstdlib>
+#include <ctime>
+
+class Product {
+public:
+    int id;
+    std::string name;
+    int count;
+    float price;
+
+    Product(int id, const std::string& name, int count, float price)
+        : id(id), name(name), count(count), price(price) {}
+};
+
+class ProductHandler {
+private:
+    std::vector<Product> products;
+
+public:
+    ProductHandler(const std::vector<Product>& products) : products(products) {}
+
+    Product* GetProduct(int id) {
+        for (auto& product : products) {
+            if (product.id == id) {
+                return &product;
+            }
+        }
+        return nullptr;
+    }
+
+    Product* GetProduct(const std::string& name) {
+        for (auto& product : products) {
+            if (product.name == name) {
+                return &product;
+            }
+        }
+        return nullptr;
+    }
+
+    void RemoveProduct(int id, int count) {
+        for (auto& product : products) {
+            if (product.id == id) {
+                product.count -= count;
+                if (product.count < 0) {
+                    product.count = 0;
+                }
+                break;
+            }
+        }
+    }
+
+    void AddProduct(const std::string& name, int count, float price) {
+        Product* existingProduct = GetProduct(name);
+        if (existingProduct) {
+            existingProduct->count += count;
+        } else {
+            int newId = products.empty() ? 1 : products.back().id + 1;
+            products.emplace_back(newId, name, count, price);
+        }
+    }
+};
+
+class Order {
+public:
+    std::string customerName;
+    std::string productName;
+    int quantity;
+
+    Order(const std::string& customerName, const std::string& productName, int quantity)
+        : customerName(customerName), productName(productName), quantity(quantity) {}
+};
+
+class OrderHandler {
+private:
+    std::queue<Order> orders;
+
+public:
+    OrderHandler(const std::queue<Order>& orders) : orders(orders) {}
+
+    Order GetOrder() {
+        Order order = orders.front();
+        orders.pop();
+        return order;
+    }
+
+    bool IsEmpty() const {
+        return orders.empty();
+    }
+
+    bool IsFull() const {
+        return false;
+    }
+};
+
+class AccessValidator {
+private:
+    std::map<int, std::string> accessCodes;
+
+public:
+    AccessValidator(const std::map<int, std::string>& employees) : accessCodes(employees) {}
+
+    void Activate(const std::string& nick) {
+        int accessCode = rand() % 10000 + 1000;
+        accessCodes[accessCode] = nick;
+    }
+
+    void Deactivate(const std::string& nick) {
+        for (auto it = accessCodes.begin(); it != accessCodes.end(); ++it) {
+            if (it->second == nick) {
+                accessCodes.erase(it);
+                break;
+            }
+        }
+    }
+
+    bool IsActive(const std::string& nick) const {
+        for (const auto& entry : accessCodes) {
+            if (entry.second == nick) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
+
+int main() {
+    std::vector<Product> products = {
+        {1, "Mleko", 50, 2.5},
+        {2, "Chleb", 30, 3.0},
+        {3, "Jajka", 20, 1.8},
+    };
+
+    ProductHandler productHandler(products);
+    productHandler.AddProduct("Jogurt", 40, 2.0);
+    productHandler.RemoveProduct(2, 5);
+
+    std::queue<Order> orders;
+    orders.push(Order("Klient1", "Mleko", 3));
+    orders.push(Order("Klient2", "Chleb", 2));
+    orders.push(Order("Klient3", "Jajka", 1));
+
+    OrderHandler orderHandler(orders);
+    while (!orderHandler.IsEmpty()) {
+        Order order = orderHandler.GetOrder();
+        Product* product = productHandler.GetProduct(order.productName);
+        if (!product) {
+            std::cout << "Produkt nie istnieje. Dodaję nowy: " << order.productName << std::endl;
+            float price;
+            std::cout << "Podaj cenę dla nowego produktu: ";
+            std::cin >> price;
+            productHandler.AddProduct(order.productName, order.quantity, price);
+        }
+    }
+
+    std::map<int, std::string> employees = {
+        {1234, "Jan Kowalski"},
+        {5678, "Anna Nowak"},
+    };
+
+    AccessValidator accessValidator(employees);
+    accessValidator.Activate("Jan Kowalski");
+    accessValidator.Deactivate("Anna Nowak");
+    std::cout << "Czy Jan Kowalski jest aktywny? " << (accessValidator.IsActive("Jan Kowalski") ? "Tak" : "Nie") << std::endl;
+    std::cout << "Czy Anna Nowak jest aktywna? " << (accessValidator.IsActive("Anna Nowak") ? "Tak" : "Nie") << std::endl;
+
+    return 0;
+}
