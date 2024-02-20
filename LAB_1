@@ -1,0 +1,56 @@
+template <typename T>
+class Stos
+{
+public:
+    int top;
+    int maxsize;
+    T* tab;
+
+    Stos(int max_size) : maxsize(maxsize), top(0)
+    {
+        tab = T[maxsize];
+    }
+    ~Stos ()
+    {
+        delete[] tab;
+    }
+    bool isempty()
+    {
+        return top == 0;
+    }
+    bool isfull()
+    {
+        return top == maxsize;
+    }
+    void addelement(T element)
+    {
+        if (isfull)
+        {
+            cout << "stos jest pelny nie mozna dodac!" << endl;
+        }
+        else
+        {
+            tab[top++] = element;
+        }
+    }
+    T removeelement()
+    {
+        if (isempty)
+        {
+            cout << "stos jest pusty!" << endl;
+        }
+        else
+        {
+            return tab[top--];
+        }
+    }
+    T aggregate()
+    {
+        int suma = 0;
+        for (int i; i <= top; i++)
+        {
+            suma = suma + tab[i];
+        }
+        return suma;
+    }
+};
