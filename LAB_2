@@ -1,0 +1,75 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <ctime>
+#include <cstdlib>
+#include <iomanip>
+
+struct RandFill {
+    void operator()(std::vector<int>& row) {
+        for (int& element : row) {
+            element = std::rand() % 20;
+        }
+    }
+};
+
+void PrintMatrix(const std::vector<std::vector<int>>& matrix) {
+    for (const std::vector<int>& row : matrix) {
+        for (int element : row) {
+            std::cout << std::left << std::setw(4) << element;
+        }
+        std::cout << std::endl;
+    }
+}
+
+int main() {
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
+    const int numRows = 6;
+    const int numCols = 3;
+
+    std::vector<std::vector<int>> matrix(numRows, std::vector<int>(numCols));
+
+    std::for_each(matrix.begin(), matrix.end(), RandFill());
+
+    std::cout << "Macierz (funktor):" << std::endl;
+    PrintMatrix(matrix);
+
+    std::cout << "\nMacierz (lambda):" << std::endl;
+    std::for_each(matrix.begin(), matrix.end(), [](const std::vector<int>& row) {
+        for (int element : row) {
+            std::cout << std::left << std::setw(4) << element;
+        }
+        std::cout << std::endl;
+    });
+
+    std::vector<std::vector<int>> matrixT(numCols, std::vector<int>(numRows));
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            matrixT[j][i] = matrix[i][j];
+        }
+    }
+
+    std::cout << "\nMacierz transponowana (lambda):" << std::endl;
+    for (const std::vector<int>& row : matrixT) {
+        for (int element : row) {
+            std::cout << std::left << std::setw(4) << element;
+        }
+        std::cout << std::endl;
+    }
+
+    auto increment = [](int& element) { element += 1; };
+    std::for_each(matrixT.begin(), matrixT.end(), [&](std::vector<int>& row) {
+        std::for_each(row.begin(), row.end(), increment);
+    });
+
+    std::cout << "\nMacierz transponowana po inkrementacji (lambda):" << std::endl;
+    for (const std::vector<int>& row : matrixT) {
+        for (int element : row) {
+            std::cout << std::left << std::setw(4) << element;
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+}
